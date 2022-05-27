@@ -77,7 +77,7 @@ def get_movie_year(movie):
         cursor.execute(f'''CREATE TABLE {movies_years_table_name}
                     (
                     movie VARCHAR(100),
-                    year INT
+                    year VARCHAR(5)
                     )''')
 
     cursor.close()
@@ -88,7 +88,7 @@ def get_movie_year(movie):
 def add_movies(movie_list):
     for movie in movie_list:
         for genre in movie['genres']:
-            update_database(f"INSERT INTO {movies_genres_table_name}"
-                            f"(movie, genre) VALUES ('{movie['title']}', '{genre}')")
-        update_database(f"INSERT INTO {movies_years_table_name}"
-                        f"(movie, year) VALUES ('{movie['title']}', {int(movie['year'])})")
+            update_database(f"INSERT INTO {movies_genres_table_name}" +
+                            "(movie, genre) VALUES ('{0}', '{1}')".format(movie['title'].replace("'", ''), genre))
+        update_database(f"INSERT INTO {movies_years_table_name}" +
+                        "(movie, year) VALUES ('{0}', {1})".format(movie['title'].replace("'", ''), movie['year']))
