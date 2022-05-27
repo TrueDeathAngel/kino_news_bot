@@ -85,10 +85,10 @@ def get_random_movie_by_genre(genres_list, table_name):
                     movie VARCHAR(100),
                     genre VARCHAR(50)
                     )''')
+    finally:
+        cursor.close()
 
-    cursor.close()
-
-    return movie
+        return movie
 
 
 def get_movie_year(movie, table_name):

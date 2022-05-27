@@ -1,7 +1,7 @@
 import telebot
 from info import TOKEN
 import db_handler as db
-from random import choice
+from releases import get_releases_list
 
 # Создаем экземпляр бота
 bot = telebot.TeleBot(TOKEN)
@@ -29,14 +29,20 @@ def get_genre_update_keyboard(chat_id):
 
 # news
 def news(message):
-    bot.send_message(message.chat.id, 'NEWS')
+    releases_list = get_releases_list()
+    result = 'Премьеры фильмов в кинотеатрах России:'
+    for i, film in enumerate(releases_list):
+        result += f"\n{i+1}. {film['title']} ({film['year']})" \
+                  f"\n({', '.join(film['genres'])})"
+    bot.send_message(message.chat.id, result)
 
 
 def random_movie(message, genres_table_name, years_table_name):
     film = db.get_random_movie_by_genre(db.get_selected_genres_list(message.chat.id), genres_table_name)
     bot.send_message(message.chat.id, 'Как насчёт...\n'
                                       f'"{film}" ({db.get_movie_year(film, years_table_name)})\nЖанры: ' +
-                     ', '.join(db.get_movie_genres_list(film, genres_table_name)))
+                     ', '.join(db.get_movie_genres_list(film, genres_table_name))
+                     if film else 'Простите! Я не могу ничего порекомендовать. Попробуйте выбрать другие жанры')
 
 
 # Рекомендуем случайный фильм, исходя из выбранных жанров
@@ -62,7 +68,7 @@ def genres(message):
 def info(message):
     bot.send_message(message.chat.id,
                      'Чтобы вам порекомендовали случайный фильм / сериал, просто нажмите на соответствующие кнопки во '
-                     'всплывающем меню! Вы также можете сделать рекомендации точнее, указав список предпочитаемых'
+                     'всплывающем меню!\nВы также можете сделать рекомендации точнее, указав список предпочитаемых'
                      ' жанров (вы, конечно, можете выбрать там столько жанров, сколько захотите, '
                      'но лучше ограничьтесь двумя-тремя. Так больше шансов найти что-то интересное). Для этого '
                      'просто нажмите на «Жанры 💎!»')

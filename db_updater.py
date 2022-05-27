@@ -25,18 +25,16 @@ for i in range(0, 7):
     film_list = [
         {
             'title':
-                film.find(('a', {'class': 'movieItem_title'}))
+                film.find('a', {'class': 'movieItem_title'})
                     .text
                     .replace("'", ''),
             'genres':
-                film.find(('div', {'class': 'movieItem_details'}))
-                    .find(('span', {'class': 'movieItem_genres'}))
+                film.find('span', {'class': 'movieItem_genres'})
                     .text
                     .replace(' ', '')
                     .split(','),
             'year':
-                film.find(('div', {'class': 'movieItem_details'}))
-                    .find_all(('span', {'class': 'movieItem_year'}))[-1]
+                film.find('span', {'class': 'movieItem_year'})
                     .text
                     .split(', ')[0]
                     .replace(' ', '')
