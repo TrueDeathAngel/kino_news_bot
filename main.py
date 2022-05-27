@@ -1,26 +1,28 @@
 import telebot
 from info import TOKEN
-from db_handler import get_selected_genres_list, remove_genre, add_genre
+import db_handler as db
+from random import choice
 
 # Создаем экземпляр бота
 bot = telebot.TeleBot(TOKEN)
-
-genres_set = {'анимация', 'аниме', 'балет', 'биография', 'боевик', 'вестерн', 'военный', 'детектив',
-              'детский', 'документальный', 'драма', 'исторический', 'комедия', 'концерт', 'короткометражный',
-              'криминал', 'мелодрама', 'мистика', 'музыка', 'мюзикл', 'приключения', 'сборник', 'семейный',
-              'сказка', 'спорт', 'триллер', 'ужасы', 'фантастика', 'фэнтези', 'эротика'}
 
 
 # genre keyboard
 def get_genre_update_keyboard(chat_id):
     keyboard = telebot.types.InlineKeyboardMarkup()
-    for genre in genres_set:
+    for genre in db.genres_set:
         keyboard.row(
             telebot.types.InlineKeyboardButton(
-                '✅' + genre if genre in get_selected_genres_list(chat_id) else genre,
+                '✅' + genre if genre in db.get_selected_genres_list(chat_id) else genre,
                 callback_data=genre
             )
         )
+    keyboard.row(
+        telebot.types.InlineKeyboardButton(
+            '🗑️Сбросить жанры🗑️',
+            callback_data='reset_genres'
+        )
+    )
 
     return keyboard
 
@@ -30,14 +32,21 @@ def news(message):
     bot.send_message(message.chat.id, 'NEWS')
 
 
-# random_film
+def random_movie(message, genres_table_name, years_table_name):
+    film = db.get_random_movie_by_genre(db.get_selected_genres_list(message.chat.id), genres_table_name)
+    bot.send_message(message.chat.id, 'Как насчёт...\n'
+                                      f'"{film}" ({db.get_movie_year(film, years_table_name)})\nЖанры: ' +
+                     ', '.join(db.get_movie_genres_list(film, genres_table_name)))
+
+
+# Рекомендуем случайный фильм, исходя из выбранных жанров
 def random_film(message):
-    bot.send_message(message.chat.id, 'RANDOM_FILM')
+    random_movie(message, db.movies_genres_table_name, db.movies_years_table_name)
 
 
 # random_series
 def random_series(message):
-    bot.send_message(message.chat.id, 'RANDOM_SERIES')
+    random_movie(message, db.series_genres_table_name, db.series_years_table_name)
 
 
 # Меню выбора жанра
@@ -51,7 +60,12 @@ def genres(message):
 
 # info
 def info(message):
-    bot.send_message(message.chat.id, 'INFO')
+    bot.send_message(message.chat.id,
+                     'Чтобы вам порекомендовали случайный фильм / сериал, просто нажмите на соответствующие кнопки во '
+                     'всплывающем меню! Вы также можете сделать рекомендации точнее, указав список предпочитаемых'
+                     ' жанров (вы, конечно, можете выбрать там столько жанров, сколько захотите, '
+                     'но лучше ограничьтесь двумя-тремя. Так больше шансов найти что-то интересное). Для этого '
+                     'просто нажмите на «Жанры 💎!»')
 
 
 menu = {'news': 'Что нового 🔎', 'random_film': 'Случайный фильм 🍿',
@@ -80,12 +94,15 @@ def edit_genres_keyboard(query):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(query):
-    if query.data in genres_set:
+    if query.data in db.genres_set:
         bot.answer_callback_query(query.id)  # убираем состоянме загрузки
-        if query.data in get_selected_genres_list(query.message.chat.id):
-            remove_genre(query.message.chat.id, query.data)
+        if query.data in db.get_selected_genres_list(query.message.chat.id):
+            db.remove_genre(query.message.chat.id, query.data)
         else:
-            add_genre(query.message.chat.id, query.data)
+            db.add_genre(query.message.chat.id, query.data)
+        edit_genres_keyboard(query)
+    elif query.data == 'reset_genres':
+        db.reset_genres(query.message.chat.id)
         edit_genres_keyboard(query)
 
 
