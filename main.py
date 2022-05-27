@@ -5,14 +5,16 @@ from db_handler import get_selected_genres_list, remove_genre, add_genre
 # Создаем экземпляр бота
 bot = telebot.TeleBot(TOKEN)
 
-genres_dict = {'anime': 'Аниме', 'biography': 'Биографии', 'war': 'Боевики',
-               'western': 'Вестерны'}
+genres_set = {'анимация', 'аниме', 'балет', 'биография', 'боевик', 'вестерн', 'военный', 'детектив',
+              'детский', 'документальный', 'драма', 'исторический', 'комедия', 'концерт', 'короткометражный',
+              'криминал', 'мелодрама', 'мистика', 'музыка', 'мюзикл', 'приключения', 'сборник', 'семейный',
+              'сказка', 'спорт', 'триллер', 'ужасы', 'фантастика', 'фэнтези', 'эротика'}
 
 
 # genre keyboard
 def get_genre_update_keyboard(chat_id):
     keyboard = telebot.types.InlineKeyboardMarkup()
-    for genre in genres_dict.items():
+    for genre in genres_set:
         keyboard.row(
             telebot.types.InlineKeyboardButton(
                 '✅' + genre[1] if genre[0] in get_selected_genres_list(chat_id) else genre[1],
@@ -78,7 +80,7 @@ def edit_genres_keyboard(query):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(query):
-    if query.data in genres_dict.keys():
+    if query.data in genres_set:
         bot.answer_callback_query(query.id)  # убираем состоянме загрузки
         if query.data in get_selected_genres_list(query.message.chat.id):
             remove_genre(query.message.chat.id, query.data)
