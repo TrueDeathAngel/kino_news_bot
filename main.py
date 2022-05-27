@@ -17,8 +17,8 @@ def get_genre_update_keyboard(chat_id):
     for genre in genres_set:
         keyboard.row(
             telebot.types.InlineKeyboardButton(
-                '✅' + genre[1] if genre[0] in get_selected_genres_list(chat_id) else genre[1],
-                callback_data=genre[0]
+                '✅' + genre if genre in get_selected_genres_list(chat_id) else genre,
+                callback_data=genre
             )
         )
 
