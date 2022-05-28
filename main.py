@@ -85,17 +85,21 @@ menu_functions = {menu['news']: news, menu['random_film']: random_film,
 
 # Изменение отображаемого списка выбранных жанров
 def edit_genres_keyboard(query):
-    if query.message:
-        bot.edit_message_reply_markup(
-            query.message.chat.id,
-            query.message.message_id,
-            reply_markup=get_genre_update_keyboard(query.message.chat.id)
-        )
-    elif query.inline_message_id:
-        bot.edit_message_reply_markup(
-            inline_message_id=query.inline_message_id,
-            reply_markup=get_genre_update_keyboard(query.message.chat.id)
-        )
+    try:
+        if query.message:
+            bot.edit_message_reply_markup(
+                query.message.chat.id,
+                query.message.message_id,
+                reply_markup=get_genre_update_keyboard(query.message.chat.id)
+            )
+        elif query.inline_message_id:
+            bot.edit_message_reply_markup(
+                inline_message_id=query.inline_message_id,
+                reply_markup=get_genre_update_keyboard(query.message.chat.id)
+            )
+    except telebot.apihelper.ApiTelegramException as ex:
+        print(ex)
+
 
 
 @bot.callback_query_handler(func=lambda call: True)
